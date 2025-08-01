@@ -1,4 +1,5 @@
 <?php
+dd('🚨 Railway عم يستخدم هاد الكود فعليًا');
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
