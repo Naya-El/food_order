@@ -1,5 +1,4 @@
 <?php
-dd('🚨 Railway عم يستخدم هاد الكود فعليًا');
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,12 +24,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
-Route::post('/register', function () {
-    return response()->json(['message' => '✅ Laravel وصل لهون من /register']);
-});
 
 
-//Route::post('/register', [\App\Http\Controllers\CustomerController\AuthController::class, 'register']);
+
+Route::post('/register', [\App\Http\Controllers\CustomerController\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\CustomerController\AuthController::class, 'login']);
 
 Route::get('/test', function () {
