@@ -1,1 +1,1 @@
-GET https://your-app-name.up.railway.app/api/test
+web: php artisan serve --host=0.0.0.0 --port=8000
