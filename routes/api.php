@@ -23,7 +23,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [\App\Http\Controllers\CustomerController\AuthController::class, 'logout']);
 
 });
-Route::post('/register', [\App\Http\Controllers\CustomerController\AuthController::class, 'register']);
+
+Route::post('/register', function () {
+    return response()->json(['message' => '✅ Laravel وصل لهون من /register']);
+});
+
+
+//Route::post('/register', [\App\Http\Controllers\CustomerController\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\CustomerController\AuthController::class, 'login']);
 
 Route::get('/test', function () {
