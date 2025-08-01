@@ -1,21 +1,30 @@
-FROM php:8.1-apache
+FROM php:8.1-cli
 
-WORKDIR /var/www/html
-
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    git unzip libzip-dev zip libonig-dev libxml2-dev \
-    && docker-php-ext-install zip pdo pdo_mysql mbstring xml
+    git \
+    unzip \
+    curl \
+    libzip-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl
 
-RUN a2enmod rewrite
-
-COPY . /var/www/html
-
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --optimize-autoloader --no-dev
+# Set working directory
+WORKDIR /var/www
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Copy existing application directory contents
+COPY . /var/www
 
-EXPOSE 80
+# Install dependencies
+RUN composer install --no-interaction --optimize-autoloader
 
-CMD ["apache2-foreground"]
+# Expose port 8000 and run Laravel server
+EXPOSE 8000
+
+CMD php artisan serve --host=0.0.0.0 --port=8000
