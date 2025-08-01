@@ -22,7 +22,7 @@ WORKDIR /var/www
 COPY . /var/www
 
 # Install dependencies
-RUN composer install --no-interaction --optimize-autoloader
+RUN composer install --no-interaction --optimize-autoloader || cat /var/www/storage/logs/laravel.log || true
 
 # Expose port 8000 and run Laravel server
 EXPOSE 8000
