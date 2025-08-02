@@ -25,16 +25,6 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
-
 Route::post('/register', [\App\Http\Controllers\CustomerController\AuthController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\CustomerController\AuthController::class, 'login']);
-
-Route::get('/test', function () {
-    return response()->json(['message' => 'Laravel is alive!']);
-});
-
-
-
-
 Route::post('store-order', [\App\Http\Controllers\CustomerController\OrderController::class, 'storeOrder']);
