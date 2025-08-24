@@ -82,7 +82,7 @@ class CartController extends Controller
             $cartItem->price = $totalPrice;
             $cartItem->save();
         }
-        $cart->total_price = $cart->cartItems()->sum('price');
+        $cart->total_price = CartItem::where('cart_id',$cart->id)->sum('price');
         $cart->save();
 
         return response()->json(['message' => 'Item added to cart successfully']);
