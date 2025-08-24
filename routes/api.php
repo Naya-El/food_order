@@ -37,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Favorite
     Route::post('save-favorite', [App\Http\Controllers\HomeController::class, 'saveFavorite']);
     Route::get('favorite-list', [App\Http\Controllers\HomeController::class, 'favoritesList']);
-    Route::delete('remove-favorite-item', [App\Http\Controllers\HomeController::class, 'removeFromFavorite']);
+    Route::delete('remove-favorite-item/{id}', [App\Http\Controllers\HomeController::class, 'removeFromFavorite']);
     Route::delete('clear-favorite', [App\Http\Controllers\HomeController::class, 'clearFavorite']);
 
     // Items
