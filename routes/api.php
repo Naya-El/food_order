@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Items
     Route::get('items',[App\Http\Controllers\HomeController::class,'standardItem']);
-    Route::get('item-details',[App\Http\Controllers\HomeController::class,'itemDetails']);
+    Route::get('item-details/{id}',[App\Http\Controllers\HomeController::class,'itemDetails']);
 
 
     Route::get('/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
