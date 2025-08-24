@@ -78,15 +78,12 @@ class HomeController extends Controller
             ));
     }
 
-    public function clearFavorite(Request $request)
+     public function clearFavorite()
     {
-        if($request->isMethod('post'))
-        {
-            FavoriteItem::where('user_id',auth()->user()->id)->delete();
+        FavoriteItem::where('user_id',auth()->user()->id)->delete();
             return response()->json([
                 'success'=>true,
             ]);
-        }
     }
 
 
