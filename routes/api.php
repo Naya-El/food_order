@@ -32,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('update-qty/{id}',[App\Http\Controllers\CartController::class,'updateItemQuantity']);
     Route::delete('remove-item/{id}',[App\Http\Controllers\CartController::class,'removeItem']);
     Route::delete('clear-cart/{id}',[App\Http\Controllers\CartController::class,'clearCart']);
-    Route::delete('confirm-cart',[App\Http\Controllers\CartController::class,'confirmCart']);
+    Route::post('confirm-cart',[App\Http\Controllers\CartController::class,'confirmCart']);
 
     // Favorite
     Route::post('save-favorite', [App\Http\Controllers\HomeController::class, 'saveFavorite']);
