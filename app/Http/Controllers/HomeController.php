@@ -74,7 +74,7 @@ class HomeController extends Controller
         if($request->isMethod('post'))
         {
             $user = auth()->user();
-            FavoriteItem::where('user_id',$user->id)->where('item_id',$request['item_id'])->delete();
+            FavoriteItem::where('user_id',$user->id)->where('id',$request['item_id'])->delete();
             return response()->json(array(
                 'success'=>true,
             ));
