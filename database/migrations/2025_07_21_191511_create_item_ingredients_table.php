@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('item_type');
             $table->integer('ingredient_id');
             $table->integer('qty');
+            $table->tinyInteger('is_optional');
             $table->timestamps();
         });
     }

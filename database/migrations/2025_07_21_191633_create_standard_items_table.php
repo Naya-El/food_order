@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('standard_items', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->json('name');
             $table->enum('type',['food','drink']);
             $table->text('description');
             $table->decimal('price');

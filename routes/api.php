@@ -14,27 +14,46 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+// Authentication
+
+Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register']);
+Route::post('/login', [\App\Http\Controllers\AuthController::class, 'login']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    Route::post('/logout', [\App\Http\Controllers\CustomerController\AuthController::class, 'logout']);
+    // Cart
+    Route::post('add-cart',[App\Http\Controllers\CartController::class,'addToCart']);
+    Route::post('update-qty/{id}',[App\Http\Controllers\CartController::class,'updateItemQuantity']);
+    Route::delete('remove-item/{id}',[App\Http\Controllers\CartController::class,'removeItem']);
+    Route::delete('clear-cart/{id}',[App\Http\Controllers\CartController::class,'clearCart']);
+
+    // Favorite
+    Route::post('save-favorite', [App\Http\Controllers\HomeController::class, 'saveFavorite']);
+    Route::get('favorite-list', [App\Http\Controllers\HomeController::class, 'favoritesList']);
+    Route::post('remove-favorite-item', [App\Http\Controllers\HomeController::class, 'removeFromFavorite']);
+    Route::post('clear-favorite', [App\Http\Controllers\HomeController::class, 'clearFavorite']);
+
+    // Items
+    Route::get('items',[App\Http\Controllers\HomeController::class,'standardItem']);
+    Route::get('item-details',[App\Http\Controllers\HomeController::class,'itemDetails']);
+
+
+    Route::get('/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
+
+
 
 });
 
 
 
 
-Route::post('/register', [\App\Http\Controllers\CustomerController\AuthController::class, 'register']);
-Route::post('/login', [\App\Http\Controllers\CustomerController\AuthController::class, 'login']);
-
-Route::get('/test', function () {
-    return response()->json(['message' => 'Laravel is alive!']);
-});
 
 
 
 
-Route::post('store-order', [\App\Http\Controllers\CustomerController\OrderController::class, 'storeOrder']);

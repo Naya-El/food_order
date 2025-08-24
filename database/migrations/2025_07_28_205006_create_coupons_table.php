@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('code')->unique();
             $table->enum('coupon_type', ['fixed', 'percent']);
             $table->float('coupon_value');
+            $table->integer('point_qty');
             $table->timestamps();
         });
     }

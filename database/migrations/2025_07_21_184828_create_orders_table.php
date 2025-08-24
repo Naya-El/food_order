@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->integer('user_id');
-            $table->enum('status', ['new','pending', 'shipped', 'cancelled'])->default('new');
+            $table->enum('status', ['new','pending', 'shipped'])->default('new');
+            $table->string('name');
+            $table->string('city');
             $table->string('delivery_address');
-            $table->string('note');
+            $table->integer('coupon_id');
             $table->timestamps();
         });
     }
