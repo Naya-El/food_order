@@ -69,17 +69,13 @@ class HomeController extends Controller
         ));
     }
 
-    public function removeFromFavorite(Request $request)
+   public function removeFromFavorite($itemId)
     {
-        if($request->isMethod('post'))
-        {
-            $user = auth()->user();
-            FavoriteItem::where('user_id',$user->id)->where('id',$request['item_id'])->delete();
-            return response()->json(array(
+        $item = FavoriteItem::where('id',$itemId)->first();
+        $item->delete();
+        return response()->json(array(
                 'success'=>true,
             ));
-        }
-
     }
 
     public function clearFavorite(Request $request)
