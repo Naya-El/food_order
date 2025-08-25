@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+
     // Cart
     Route::post('add-cart',[App\Http\Controllers\CartController::class,'addToCart']);
     Route::post('update-qty/{id}',[App\Http\Controllers\CartController::class,'updateItemQuantity']);
