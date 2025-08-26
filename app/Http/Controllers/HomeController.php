@@ -9,12 +9,13 @@ use Illuminate\Http\Request;
 class HomeController extends Controller
 {
 
-    public function standardItem(Request $request)
+      public function standardItem(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
 
-        $items = StandardItem::all()->map(function ($item) use ($lang) {
-            $name = json_decode($item->name, true)[$lang] ?? $item->name;
+        $items = StandardItem::with('itemIngredient')->get()->map(function ($item) use ($lang) {
+            $decoded = json_decode($item->name, true);
+            $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
 
             return [
                 'id' => $item->id,
@@ -22,8 +23,9 @@ class HomeController extends Controller
                 'type' => $item->type,
                 'description' => $item->description,
                 'price' => $item->price,
-                'image' => asset('storage/' . $item->image),
+                'image' => $item->image ? asset('storage/' . $item->image) : null,
                 'is_available' => (bool) $item->is_available,
+                'ingredients' => $item->itemIngredient, // إذا بدك ترجّع العلاقة
             ];
         });
 
@@ -31,9 +33,8 @@ class HomeController extends Controller
             'status' => true,
             'data' => $items,
         ]);
-
-
     }
+
 
     public function itemDetails($itemId)
     {
