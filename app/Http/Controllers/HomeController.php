@@ -6,14 +6,11 @@ use App\Models\FavoriteItem;
 use App\Models\StandardItem;
 use Illuminate\Http\Request;
 
-class HomeController extends Controller
-{
-
-      public function standardItem(Request $request)
+    public function standardItem(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
 
-        $items = StandardItem::with('itemIngredient')->get()->map(function ($item) use ($lang) {
+        $items = StandardItem::with('itemIngredients.ingredient')->get()->map(function ($item) use ($lang) {
             $decoded = json_decode($item->name, true);
             $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
 
@@ -25,7 +22,15 @@ class HomeController extends Controller
                 'price' => $item->price,
                 'image' => $item->image ? asset('storage/' . $item->image) : null,
                 'is_available' => (bool) $item->is_available,
-                'ingredients' => $item->itemIngredient, // إذا بدك ترجّع العلاقة
+                'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                    $decoded = json_decode($ii->ingredient->name, true);
+                    $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
+
+                    return [
+                        'id' => $ii->ingredient->id,
+                        'name' => $ingredientName,
+                    ];
+                }),
             ];
         });
 
