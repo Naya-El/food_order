@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 class StandardItem extends Model
 {
     use HasFactory;
-       public function itemIngredient()
+
+     public function itemIngredients()
     {
-        return $this->hasMany(ItemIngredient::class, 'item_id');
+        return $this->hasMany(ItemIngredient::class, 'item_id')
+        ->with('ingredient');
     }
 }
