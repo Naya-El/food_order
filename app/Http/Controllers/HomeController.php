@@ -6,6 +6,8 @@ use App\Models\FavoriteItem;
 use App\Models\StandardItem;
 use Illuminate\Http\Request;
 
+class HomeController extends Controller
+{
     public function standardItem(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
@@ -40,10 +42,9 @@ use Illuminate\Http\Request;
         ]);
     }
 
-
     public function itemDetails($itemId)
     {
-        $itemData = StandardItem::where('id',$itemId)->first();
+        $itemData = StandardItem::where('id', $itemId)->first();
         return response()->json([
             'status' => true,
             'itemData' => $itemData,
@@ -52,16 +53,16 @@ use Illuminate\Http\Request;
 
     public function saveFavorite(Request $request)
     {
-        if($request->isMethod('post'))
-        {
+        if ($request->isMethod('post')) {
             $user = $request->user();
 
             $favourite = new FavoriteItem();
             $favourite->user_id = $user->id;
             $favourite->item_id = $request['item_id'];
             $favourite->save();
+
             return response()->json([
-                'success'=>true,
+                'success' => true,
             ]);
         }
     }
@@ -69,28 +70,26 @@ use Illuminate\Http\Request;
     public function favoritesList()
     {
         $user = auth()->user();
-        $favourites = FavoriteItem::with('items')->where('user_id',$user->id)->get();
-        return response()->json(array(
-            'favourites'=>$favourites
-        ));
+        $favourites = FavoriteItem::with('items')->where('user_id', $user->id)->get();
+        return response()->json([
+            'favourites' => $favourites,
+        ]);
     }
 
-   public function removeFromFavorite($itemId)
+    public function removeFromFavorite($itemId)
     {
-        $item = FavoriteItem::where('id',$itemId)->first();
+        $item = FavoriteItem::where('id', $itemId)->first();
         $item->delete();
-        return response()->json(array(
-                'success'=>true,
-            ));
+        return response()->json([
+            'success' => true,
+        ]);
     }
 
-     public function clearFavorite()
+    public function clearFavorite()
     {
-        FavoriteItem::where('user_id',auth()->user()->id)->delete();
-            return response()->json([
-                'success'=>true,
-            ]);
+        FavoriteItem::where('user_id', auth()->user()->id)->delete();
+        return response()->json([
+            'success' => true,
+        ]);
     }
-
-
 }

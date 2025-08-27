@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Models;
@@ -10,9 +9,9 @@ class StandardItem extends Model
 {
     use HasFactory;
 
-     public function itemIngredients()
+    public function itemIngredients()
     {
         return $this->hasMany(ItemIngredient::class, 'item_id')
-        ->with('ingredient');
+            ->with('ingredient');
     }
 }
