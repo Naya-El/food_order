@@ -128,55 +128,56 @@ class CartController extends Controller
         }
     }
 
-    public function confirmCart(Request $request)
+      public function confirmCart(Request $request)
     {
         $userId = $request->user()->id;
+        $currentPoints = User::where('id', $userId)->value('points');
 
-        $cart = Cart::where('user_id', $userId)->first();
-        $currentPoints = User::where('id',$userId)->value('points');
-
-        if($request->coupon_code !== "" && $request->coupon_code !== null)
-        {
-            $couponData =  Coupon::where('code',$request->coupon_code)->first();
-            User::where('id',$userId)->update([
-               'points'=> $currentPoints - $couponData['point_qty']
+        $couponData = null;
+        if (!empty($request->coupon_code)) {
+            $couponData = Coupon::where('code', $request->coupon_code)->first();
+            if ($couponData) {
+                User::where('id', $userId)->update([
+                    'points' => $currentPoints - $couponData->point_qty
+                ]);
+            }
+        } else {
+            $points = $request->input('total') / 100;
+            User::where('id', $userId)->update([
+                'points' => $currentPoints + $points
             ]);
-        }else{
-            $points = $request['total'] / 100;
-            User::where('id',$userId)->update([
-                'points'=> $currentPoints + $points
-            ]);
-
         }
-
         $order = new Order();
         $order->user_id = $userId;
         $order->status = 'new';
         $order->name = $request->input('name');
         $order->city = $request->input('city');
         $order->delivery_address = $request->input('delivery_address');
-        $order->coupon_id = $couponData->id ?? 0;
+        $order->coupon_id = $couponData->id ?? null;
         $order->save();
 
-        foreach ($cart->cartItems as $cartItem) {
-            $orderItem = new OrderItem();
-            $orderItem->order_id = $order->id;
-            $orderItem->item_id = $cartItem->item_id;
-            $orderItem->item_type = $cartItem->item_type;
-            $orderItem->qty = $cartItem->quantity;
-            $orderItem->price = $cartItem->price;
-            $orderItem->save();
+        if ($request->has('items')) {
+            foreach ($request->input('items') as $item) {
+                $orderItem = new OrderItem();
+                $orderItem->order_id = $order->id;
+                $orderItem->item_id = $item['item_id'];
+                $orderItem->item_type = $item['item_type'];
+                $orderItem->qty = $item['qty'];
+                $orderItem->price = $item['price'];
+                $orderItem->save();
+
+                $standardItem = StandardItem::find($item['item_id']);
+                if ($standardItem) {
+                    $standardItem->decrement('stock', $item['qty']);
+                }
+            }
         }
-
-        $cart->cartItems()->delete();
-        $cart->total_price = 0;
-        $cart->save();
-
         return response()->json([
             'success' => true,
             'order_id' => $order->id
         ]);
     }
+
 
 
 }
