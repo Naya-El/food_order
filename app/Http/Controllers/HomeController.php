@@ -22,7 +22,7 @@ class HomeController extends Controller
                 'type' => $item->type,
                 'description' => $item->description,
                 'price' => $item->price,
-                'image' => $item->image ? asset('storage/' . $item->image) : null,
+                'image' => $item->image ? asset('storage/app/public/' . $item->image) : null,
                 'is_available' => (bool) $item->is_available,
                 'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
                     $decoded = json_decode($ii->ingredient->name, true);
@@ -32,7 +32,7 @@ class HomeController extends Controller
                         'name' => $ingredientName,
                         'unit' => $ii->ingredient->unit,
                         'price' => $ii->ingredient->price,
-                        'image' => $ii->ingredient->image ? asset('storage/' . $ii->ingredient->image) : null,
+                        'image' => $ii->ingredient->image ? asset('storage/app/public/' . $ii->ingredient->image) : null,
                     ];
                 }),
             ];
@@ -91,7 +91,7 @@ class HomeController extends Controller
                     'type' => $item->type,
                     'description' => $item->description,
                     'price' => $item->price,
-                    'image' => $item->image ? asset('storage/' . $item->image) : null,
+                    'image' => $item->image ? asset('storage/app/public/' . $item->image) : null,
                     'is_available' => (bool) $item->is_available,
                     'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
                         $decoded = json_decode($ii->ingredient->name, true);
@@ -102,7 +102,7 @@ class HomeController extends Controller
                             'name' => $ingredientName,
                             'unit' => $ii->ingredient->unit,
                             'price' => $ii->ingredient->price,
-                            'image' => $ii->ingredient->image ? asset('storage/' . trim($ii->ingredient->image)) : null,
+                            'image' => $ii->ingredient->image ? asset('storage/app/public/' . trim($ii->ingredient->image)) : null,
                         ];
                     }),
                 ];
