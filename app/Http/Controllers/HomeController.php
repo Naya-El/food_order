@@ -27,10 +27,12 @@ class HomeController extends Controller
                 'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
                     $decoded = json_decode($ii->ingredient->name, true);
                     $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
-
                     return [
                         'id' => $ii->ingredient->id,
                         'name' => $ingredientName,
+                        'unit' => $ii->ingredient->unit,
+                        'price' => $ii->ingredient->price,
+                        'image' => $ii->ingredient->image ? asset('storage/' . $ii->ingredient->image) : null,
                     ];
                 }),
             ];
