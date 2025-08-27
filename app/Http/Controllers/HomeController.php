@@ -70,6 +70,87 @@ class HomeController extends Controller
     }
 
 
+       public function newItems(Request $request)
+    {
+        $lang = $request->query('lang', app()->getLocale());
+
+        $items = StandardItem::with('itemIngredients.ingredient')
+            ->where('is_available', 1)
+            ->where('new', 1)
+            ->get()
+            ->map(function ($item) use ($lang) {
+                $decoded = json_decode($item->name, true);
+                $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
+
+                return [
+                    'id' => $item->id,
+                    'name' => $name,
+                    'category_id' => $item->category_id,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image' => $item->image ? asset('storage/' . $item->image) : null,
+                    'is_available' => (bool) $item->is_available,
+                    'new' => (bool) $item->new,
+                    'popular' => (bool) $item->popular,
+                    'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                        $decoded = json_decode($ii->ingredient->name, true);
+                        $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
+
+                        return [
+                            'id' => $ii->ingredient->id,
+                            'name' => $ingredientName,
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'data' => $items,
+        ]);
+    }
+
+    public function popularItems(Request $request)
+    {
+        $lang = $request->query('lang', app()->getLocale());
+
+        $items = StandardItem::with('itemIngredients.ingredient')
+            ->where('is_available', 1)
+            ->where('popular', 1)
+            ->get()
+            ->map(function ($item) use ($lang) {
+                $decoded = json_decode($item->name, true);
+                $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
+
+                return [
+                    'id' => $item->id,
+                    'name' => $name,
+                    'category_id' => $item->category_id,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image' => $item->image ? asset('storage/' . $item->image) : null,
+                    'is_available' => (bool) $item->is_available,
+                    'popular' => (bool) $item->popular,
+                    'new' => (bool) $item->new,
+                    'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                        $decoded = json_decode($ii->ingredient->name, true);
+                        $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
+
+                        return [
+                            'id' => $ii->ingredient->id,
+                            'name' => $ingredientName,
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'data' => $items,
+        ]);
+    }
+
+
     public function itemFilter(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
