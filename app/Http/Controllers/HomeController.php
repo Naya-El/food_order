@@ -69,12 +69,49 @@ class HomeController extends Controller
         }
     }
 
-    public function favoritesList()
+    public function favoritesList(Request $request)
     {
-        $user = auth()->user();
-        $favourites = FavoriteItem::with('items')->where('user_id', $user->id)->get();
+        $user = $request->user();
+        $lang = $request->query('lang', app()->getLocale());
+
+        $favourites = FavoriteItem::with('items.itemIngredients.ingredient')
+            ->where('user_id', $user->id)
+            ->get()
+            ->map(function ($fav) use ($lang) {
+                $item = $fav->items;
+
+                if (!$item) return null;
+
+                $decoded = json_decode($item->name, true);
+                $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
+
+                return [
+                    'id' => $item->id,
+                    'name' => $name,
+                    'type' => $item->type,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image' => $item->image ? asset('storage/' . $item->image) : null,
+                    'is_available' => (bool) $item->is_available,
+                    'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                        $decoded = json_decode($ii->ingredient->name, true);
+                        $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
+
+                        return [
+                            'id' => $ii->ingredient->id,
+                            'name' => $ingredientName,
+                            'unit' => $ii->ingredient->unit,
+                            'price' => $ii->ingredient->price,
+                            'image' => $ii->ingredient->image ? asset('storage/' . trim($ii->ingredient->image)) : null,
+                        ];
+                    }),
+                ];
+            })
+            ->filter(); // Remove nulls in case any favorite has no item
+
         return response()->json([
-            'favourites' => $favourites,
+            'status' => true,
+            'data' => $favourites,
         ]);
     }
 
