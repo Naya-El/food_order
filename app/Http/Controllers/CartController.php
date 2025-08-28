@@ -212,7 +212,6 @@ class CartController extends Controller
 
         return response()->json([
             'success' => true,
-            'order_id' => $order->id
         ]);
     }
 
