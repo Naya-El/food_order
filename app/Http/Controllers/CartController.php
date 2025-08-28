@@ -155,7 +155,7 @@ class CartController extends Controller
         $order->name = $request->input('name');
         $order->city = $request->input('city');
         $order->delivery_address = $request->input('delivery_address');
-        $order->coupon_id = $couponData->id ?? null;
+        $order->coupon_id = $couponData->id ?? 0;
         $order->save();
 
         if ($request->has('items')) {
