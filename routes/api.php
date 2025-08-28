@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 
-      // Cart
+  // Cart
     Route::post('add-cart',[App\Http\Controllers\CartController::class,'addToCart']);
     Route::post('update-qty/{id}',[App\Http\Controllers\CartController::class,'updateItemQuantity']);
     Route::delete('remove-item/{id}',[App\Http\Controllers\CartController::class,'removeItem']);
@@ -50,10 +50,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Items
     Route::get('items',[App\Http\Controllers\HomeController::class,'standardItem']);
-     Route::get('new-items',[App\Http\Controllers\HomeController::class,'newItems']);
+    Route::get('new-items',[App\Http\Controllers\HomeController::class,'newItems']);
     Route::get('popular-items',[App\Http\Controllers\HomeController::class,'popularItems']);
     Route::get('item-details/{id}',[App\Http\Controllers\HomeController::class,'itemDetails']);
 
+    // Order
+    Route::get('orders',[App\Http\Controllers\HomeController::class,'orders']);
+    Route::get('order-details/{id}',[App\Http\Controllers\HomeController::class,'orderDetails']);
+
 
     Route::get('/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
+
 });
