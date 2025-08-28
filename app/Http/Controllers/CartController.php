@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function addToCart(Request $request)
+     public function addToCart(Request $request)
     {
         $userId = $request->user()->id;
         $cart = Cart::firstOrCreate(
@@ -128,7 +128,8 @@ class CartController extends Controller
         }
     }
 
-      public function confirmCart(Request $request)
+
+    public function confirmCart(Request $request)
     {
         $userId = $request->user()->id;
         $currentPoints = User::where('id', $userId)->value('points');
@@ -147,6 +148,7 @@ class CartController extends Controller
                 'points' => $currentPoints + $points
             ]);
         }
+
         $order = new Order();
         $order->user_id = $userId;
         $order->status = 'new';
@@ -158,25 +160,62 @@ class CartController extends Controller
 
         if ($request->has('items')) {
             foreach ($request->input('items') as $item) {
-                $orderItem = new OrderItem();
-                $orderItem->order_id = $order->id;
-                $orderItem->item_id = $item['item_id'];
-                $orderItem->item_type = $item['item_type'];
-                $orderItem->qty = $item['qty'];
-                $orderItem->price = $item['price'];
-                $orderItem->save();
+                if ($item['item_type'] === 'standard') {
+                    // Standard item
+                    $standardItem = StandardItem::findOrFail($item['item_id']);
 
-                $standardItem = StandardItem::find($item['item_id']);
-                if ($standardItem) {
+                    $orderItem = new OrderItem();
+                    $orderItem->order_id = $order->id;
+                    $orderItem->item_id = $standardItem->id;
+                    $orderItem->item_type = 'standard';
+                    $orderItem->qty = $item['qty'];
+                    $orderItem->price = $standardItem->price * $item['qty'];
+                    $orderItem->save();
                     $standardItem->decrement('stock', $item['qty']);
+
+                } elseif ($item['item_type'] === 'customized') {
+                    // Customized item
+                    $customItem = new CustomizedItem();
+                    $customItem->user_id = $userId;
+                    $customItem->standard_id = $item['item_id'];
+                    $customItem->custom_name = $item['custom_name'] ?? null;
+                    $customItem->save();
+
+                    $totalPrice = StandardItem::findOrFail($item['item_id'])->price * $item['qty'];
+
+                    if (!empty($item['ingredients'])) {
+                        foreach ($item['ingredients'] as $ingredient) {
+                            $itemIngredient = new ItemIngredient();
+                            $itemIngredient->item_id = $customItem->id;
+                            $itemIngredient->item_type = 'customized';
+                            $itemIngredient->ingredient_id = $ingredient['id'];
+                            $itemIngredient->qty = $ingredient['qty'];
+                            $itemIngredient->is_optional = 0;
+                            $itemIngredient->save();
+
+                            if (!empty($ingredient['price'])) {
+                                $totalPrice += $ingredient['price'] * $ingredient['qty'];
+                            }
+                        }
+                    }
+
+                    $orderItem = new OrderItem();
+                    $orderItem->order_id = $order->id;
+                    $orderItem->item_id = $customItem->id;
+                    $orderItem->item_type = 'customized';
+                    $orderItem->qty = $item['qty'];
+                    $orderItem->price = $totalPrice;
+                    $orderItem->save();
                 }
             }
         }
+
         return response()->json([
             'success' => true,
             'order_id' => $order->id
         ]);
     }
+
 
 
 
