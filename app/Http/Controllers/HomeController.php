@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-       public function standardItem(Request $request)
+        public function standardItem(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
 
@@ -70,7 +70,55 @@ class HomeController extends Controller
     }
 
 
-       public function newItems(Request $request)
+    public function itemFilter(Request $request)
+    {
+        $lang = $request->query('lang', app()->getLocale());
+        $categoryId = $request['category_id'];
+
+        $items = StandardItem::with('itemIngredients.ingredient')
+            ->where('is_available', 1)
+            ->where(function ($query) {
+                $query->where('new', 1)
+                    ->orWhere('popular', 1);
+            })
+            ->when($categoryId, function ($query, $categoryId) {
+                return $query->where('category_id', $categoryId);
+            })
+            ->get()
+            ->map(function ($item) use ($lang) {
+                $decoded = json_decode($item->name, true);
+                $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
+
+                return [
+                    'id' => $item->id,
+                    'name' => $name,
+                    'category_id' => $item->category_id,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image' => $item->image ? asset('storage/' . $item->image) : null,
+                    'is_available' => (bool) $item->is_available,
+                    'new' => (bool) $item->new,
+                    'popular' => (bool) $item->popular,
+                    'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                        $decoded = json_decode($ii->ingredient->name, true);
+                        $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
+
+                        return [
+                            'id' => $ii->ingredient->id,
+                            'name' => $ingredientName,
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'data' => $items,
+        ]);
+    }
+
+
+    public function newItems(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
 
@@ -151,56 +199,11 @@ class HomeController extends Controller
     }
 
 
-    public function itemFilter(Request $request)
-    {
-        $lang = $request->query('lang', app()->getLocale());
-        $categoryId = $request['category_id'];
 
-        $items = StandardItem::with('itemIngredients.ingredient')
-            ->where('is_available', 1)
-            ->where(function ($query) {
-                $query->where('new', 1)
-                    ->orWhere('popular', 1);
-            })
-            ->when($categoryId, function ($query, $categoryId) {
-                return $query->where('category_id', $categoryId);
-            })
-            ->get()
-            ->map(function ($item) use ($lang) {
-                $decoded = json_decode($item->name, true);
-                $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
-
-                return [
-                    'id' => $item->id,
-                    'name' => $name,
-                    'category_id' => $item->category_id,
-                    'description' => $item->description,
-                    'price' => $item->price,
-                    'image' => $item->image ? asset('storage/' . $item->image) : null,
-                    'is_available' => (bool) $item->is_available,
-                    'new' => (bool) $item->new,
-                    'popular' => (bool) $item->popular,
-                    'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
-                        $decoded = json_decode($ii->ingredient->name, true);
-                        $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
-
-                        return [
-                            'id' => $ii->ingredient->id,
-                            'name' => $ingredientName,
-                        ];
-                    }),
-                ];
-            });
-
-        return response()->json([
-            'status' => true,
-            'data' => $items,
-        ]);
-    }
 
     public function itemDetails($itemId)
     {
-        $itemData = StandardItem::where('id', $itemId)->first();
+        $itemData = StandardItem::where('id',$itemId)->first();
         return response()->json([
             'status' => true,
             'itemData' => $itemData,
@@ -209,80 +212,63 @@ class HomeController extends Controller
 
     public function saveFavorite(Request $request)
     {
-        if ($request->isMethod('post')) {
+        if($request->isMethod('post'))
+        {
             $user = $request->user();
 
             $favourite = new FavoriteItem();
             $favourite->user_id = $user->id;
             $favourite->item_id = $request['item_id'];
             $favourite->save();
-
             return response()->json([
-                'success' => true,
+                'success'=>true,
             ]);
         }
     }
 
-    public function favoritesList(Request $request)
+    public function favoritesList()
     {
-        $user = $request->user();
-        $lang = $request->query('lang', app()->getLocale());
-
-        $favourites = FavoriteItem::with('items.itemIngredients.ingredient')
-            ->where('user_id', $user->id)
-            ->get()
-            ->map(function ($fav) use ($lang) {
-                $item = $fav->items;
-
-                if (!$item) return null;
-
-                $decoded = json_decode($item->name, true);
-                $name = is_array($decoded) ? ($decoded[$lang] ?? $item->name) : $item->name;
-
-                return [
-                    'id' => $item->id,
-                    'name' => $name,
-                    'type' => $item->type,
-                    'description' => $item->description,
-                    'price' => $item->price,
-                    'image' => $item->image ? asset('storage/app/public/' . $item->image) : null,
-                    'is_available' => (bool) $item->is_available,
-                    'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
-                        $decoded = json_decode($ii->ingredient->name, true);
-                        $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
-
-                        return [
-                            'id' => $ii->ingredient->id,
-                            'name' => $ingredientName,
-                            'unit' => $ii->ingredient->unit,
-                            'price' => $ii->ingredient->price,
-                            'image' => $ii->ingredient->image ? asset('storage/app/public/' . trim($ii->ingredient->image)) : null,
-                        ];
-                    }),
-                ];
-            })
-            ->filter(); // Remove nulls in case any favorite has no item
-
-        return response()->json([
-            'status' => true,
-            'data' => $favourites,
-        ]);
+        $user = auth()->user();
+        $favourites = FavoriteItem::with('items')->where('user_id',$user->id)->get();
+        return response()->json(array(
+            'favourites'=>$favourites
+        ));
     }
 
     public function removeFromFavorite($itemId)
     {
-        $item = FavoriteItem::where('id', $itemId)->first();
+        $item = FavoriteItem::where('id',$itemId)->first();
         $item->delete();
-        return response()->json([
-            'success' => true,
-        ]);
+        return response()->json(array(
+                'success'=>true,
+            ));
     }
 
     public function clearFavorite()
     {
-        FavoriteItem::where('user_id', auth()->user()->id)->delete();
-        return response()->json([
-            'success' => true,
-        ]);
+        FavoriteItem::where('user_id',auth()->user()->id)->delete();
+            return response()->json([
+                'success'=>true,
+            ]);
     }
+
+
+    public function orders()
+    {
+        $orders = Order::where('user_id',auth()->user()->id)->get();
+        return response()->json(array(
+            'orders'=>$orders
+        ));
+    }
+
+    public function orderDetails($id)
+    {
+        $orderData = Order::where('id',$id)->first();
+        $orderItems = OrderItem::where('order_id',$id)->get();
+        return response()->json(array(
+            'orderData'=>$orderData,
+            'orderItems'=>$orderItems
+        ));
+    }
+
 }
