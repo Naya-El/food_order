@@ -118,11 +118,14 @@ class HomeController extends Controller
     }
 
 
-    public function newItems(Request $request)
+  
+
+     public function newItems(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
+        $categoryId = $request['category_id'];
 
-        $items = StandardItem::with('itemIngredients.ingredient')
+        $items = StandardItem::with('itemIngredients.ingredient')->where('category_id',$categoryId)
             ->where('is_available', 1)
             ->where('new', 1)
             ->get()
@@ -161,8 +164,9 @@ class HomeController extends Controller
     public function popularItems(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
+        $categoryId = $request['category_id'];
 
-        $items = StandardItem::with('itemIngredients.ingredient')
+        $items = StandardItem::with('itemIngredients.ingredient')->where('category_id',$categoryId)
             ->where('is_available', 1)
             ->where('popular', 1)
             ->get()
@@ -197,7 +201,6 @@ class HomeController extends Controller
             'data' => $items,
         ]);
     }
-
 
 
 
