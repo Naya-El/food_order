@@ -50,8 +50,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
   // Items
   Route::get('items', [App\Http\Controllers\HomeController::class, 'standardItem']);
-  Route::get('new-items', [App\Http\Controllers\HomeController::class, 'newItems']);
-  Route::get('popular-items', [App\Http\Controllers\HomeController::class, 'popularItems']);
+  Route::post('new-items', [App\Http\Controllers\HomeController::class, 'newItems']);
+  Route::post('popular-items', [App\Http\Controllers\HomeController::class, 'popularItems']);
   Route::get('item-details/{id}', [App\Http\Controllers\HomeController::class, 'itemDetails']);
 
   // Order
