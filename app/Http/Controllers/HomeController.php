@@ -267,7 +267,7 @@ class HomeController extends Controller
 
         return response()->json([
             'status' => true,
-            'favourites' => $favourites,
+            'data' => $favourites,
         ]);
     }
 
