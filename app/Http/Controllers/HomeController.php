@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\FavoriteItem;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\StandardItem;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-        public function standardItem(Request $request)
+    public function standardItem(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
 
@@ -118,14 +121,14 @@ class HomeController extends Controller
     }
 
 
-  
 
-     public function newItems(Request $request)
+
+    public function newItems(Request $request)
     {
         $lang = $request->query('lang', app()->getLocale());
         $categoryId = $request['category_id'];
 
-        $items = StandardItem::with('itemIngredients.ingredient')->where('category_id',$categoryId)
+        $items = StandardItem::with('itemIngredients.ingredient')->where('category_id', $categoryId)
             ->where('is_available', 1)
             ->where('new', 1)
             ->get()
@@ -166,7 +169,7 @@ class HomeController extends Controller
         $lang = $request->query('lang', app()->getLocale());
         $categoryId = $request['category_id'];
 
-        $items = StandardItem::with('itemIngredients.ingredient')->where('category_id',$categoryId)
+        $items = StandardItem::with('itemIngredients.ingredient')->where('category_id', $categoryId)
             ->where('is_available', 1)
             ->where('popular', 1)
             ->get()
@@ -206,7 +209,7 @@ class HomeController extends Controller
 
     public function itemDetails($itemId)
     {
-        $itemData = StandardItem::where('id',$itemId)->first();
+        $itemData = StandardItem::where('id', $itemId)->first();
         return response()->json([
             'status' => true,
             'itemData' => $itemData,
@@ -215,8 +218,7 @@ class HomeController extends Controller
 
     public function saveFavorite(Request $request)
     {
-        if($request->isMethod('post'))
-        {
+        if ($request->isMethod('post')) {
             $user = $request->user();
 
             $favourite = new FavoriteItem();
@@ -224,7 +226,7 @@ class HomeController extends Controller
             $favourite->item_id = $request['item_id'];
             $favourite->save();
             return response()->json([
-                'success'=>true,
+                'success' => true,
             ]);
         }
     }
@@ -232,46 +234,45 @@ class HomeController extends Controller
     public function favoritesList()
     {
         $user = auth()->user();
-        $favourites = FavoriteItem::with('items')->where('user_id',$user->id)->get();
+        $favourites = FavoriteItem::with('items')->where('user_id', $user->id)->get();
         return response()->json(array(
-            'favourites'=>$favourites
+            'favourites' => $favourites
         ));
     }
 
     public function removeFromFavorite($itemId)
     {
-        $item = FavoriteItem::where('id',$itemId)->first();
+        $item = FavoriteItem::where('id', $itemId)->first();
         $item->delete();
         return response()->json(array(
-                'success'=>true,
-            ));
+            'success' => true,
+        ));
     }
 
     public function clearFavorite()
     {
-        FavoriteItem::where('user_id',auth()->user()->id)->delete();
-            return response()->json([
-                'success'=>true,
-            ]);
+        FavoriteItem::where('user_id', auth()->user()->id)->delete();
+        return response()->json([
+            'success' => true,
+        ]);
     }
 
 
     public function orders()
     {
-        $orders = Order::where('user_id',auth()->user()->id)->get();
+        $orders = Order::where('user_id', auth()->user()->id)->get();
         return response()->json(array(
-            'orders'=>$orders
+            'orders' => $orders
         ));
     }
 
     public function orderDetails($id)
     {
-        $orderData = Order::where('id',$id)->first();
-        $orderItems = OrderItem::where('order_id',$id)->get();
+        $orderData = Order::where('id', $id)->first();
+        $orderItems = OrderItem::where('order_id', $id)->get();
         return response()->json(array(
-            'orderData'=>$orderData,
-            'orderItems'=>$orderItems
+            'orderData' => $orderData,
+            'orderItems' => $orderItems
         ));
     }
-
 }
