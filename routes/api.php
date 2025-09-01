@@ -58,6 +58,9 @@ Route::middleware('auth:sanctum')->group(function () {
   Route::get('orders', [App\Http\Controllers\HomeController::class, 'orders']);
   Route::get('order-details/{id}', [App\Http\Controllers\HomeController::class, 'orderDetails']);
 
+     // Location
+    Route::post('change-location',[\App\Http\Controllers\AuthController::class, 'changeLocation']);
+
 
   Route::get('/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
 });
