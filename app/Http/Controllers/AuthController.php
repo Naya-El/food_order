@@ -15,13 +15,14 @@ use Intervention\Image\Drivers\Gd\Driver;
 class AuthController extends Controller
 {
 
-    public function register(Request $request)
+       public function register(Request $request)
     {
         $data = $request->validate([
             'username'     => 'required|string|max:255',
             'email'    => 'nullable|email|max:255|unique:users,email',
             'phone_number'    => 'nullable|string|max:30|unique:users,phone_number',
             'password' => 'required|confirmed|min:8',
+            'location' => 'required',
         ]);
 
         if (!$request->filled('email') && !$request->filled('phone_number')) {
@@ -56,6 +57,7 @@ class AuthController extends Controller
         $user->phone_number = $request['phone_number'];
         $user->role = 'customer';
         $user->is_active = 1;
+        $user->location = $request['location'];
         $user->points = 0;
         $user->profile_image = $profileImagePath;
         $user->save();
@@ -68,6 +70,7 @@ class AuthController extends Controller
             'token_type' => 'Bearer',
         ], 201);
     }
+
 
     public function login(Request $request)
     {
@@ -114,4 +117,13 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['success' => true]);
     }
+
+        public function changeLocation(Request $request){
+        $userId = $request->user()->id;
+        User::where('id',$userId)->update(['location'=>$request['location']]);
+        return response()->json(['success' => true]);
+
+
+    }
+
 }
