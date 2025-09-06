@@ -296,14 +296,20 @@ class HomeController extends Controller
             'orders' => $orders
         ));
     }
-
-    public function orderDetails($id)
+ public function orderDetails($id)
     {
         $orderData = Order::where('id', $id)->first();
         $orderItems = OrderItem::where('order_id', $id)->get();
+        $totalPrice = $orderItems->sum(function ($item) {
+            return $item->price * $item->qty;
+        });
+        $orderData->total_price = $totalPrice;
+
+
         return response()->json(array(
-            'orderData' => $orderData,
-            'orderItems' => $orderItems
+            'order' => $orderData,
+            'items' => $orderItems,
+            'total_price' => $totalPrice,
         ));
     }
-}
+ }
