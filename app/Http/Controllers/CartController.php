@@ -15,18 +15,25 @@ class CartController extends Controller
     public function confirmCart(Request $request)
     {
         $userId = $request->user()->id;
+
         $currentPoints = User::where('id', $userId)->value('points');
-        $points = $request->input('total') / 100;
+        if(!$request->point_qty  || $request->point_qty ==0)
+        {
+            $points = $request->input('total_price') / 100;
             User::where('id', $userId)->update([
                 'points' => $currentPoints + $points
             ]);
-
+            $total = $request['total_price'];
+        }else{
+            $total = $request['total_price'];
+        }
 
         $order = new Order();
         $order->user_id = $userId;
         $order->status = 'new';
         $order->name = $request->input('name');
         $order->delivery_address = $request->input('delivery_address');
+        $order->total_price = $total;
         $order->save();
 
         if ($request->has('items')) {
