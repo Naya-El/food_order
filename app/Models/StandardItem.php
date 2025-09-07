@@ -18,4 +18,9 @@ class StandardItem extends Model
         return $this->hasMany(ItemIngredient::class, 'item_id')
             ->with('ingredient');
     }
+
+       public function orderItems()
+    {
+        return $this->morphMany(OrderItem::class, 'item', 'item_type', 'item_id');
+    }
 }
