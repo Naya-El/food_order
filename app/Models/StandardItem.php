@@ -9,6 +9,10 @@ class StandardItem extends Model
 {
     use HasFactory;
 
+      protected $casts = [
+        'name' => 'array', 
+    ];
+
     public function itemIngredients()
     {
         return $this->hasMany(ItemIngredient::class, 'item_id')
