@@ -147,14 +147,21 @@ class HomeController extends Controller
                     'new' => (bool) $item->new,
                     'popular' => (bool) $item->popular,
                     'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                        if (!$ii->ingredient) {
+                            return null; // skip if ingredient missing
+                        }
+
                         $decoded = json_decode($ii->ingredient->name, true);
                         $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
 
                         return [
-                            'id' => $ii->ingredient->id,
-                            'name' => $ingredientName,
+                            'id'    => $ii->ingredient->id,
+                            'name'  => $ingredientName,
+                            'price' => $ii->ingredient->price,
+                            'image' => $ii->ingredient->image ? asset('storage/' . $ii->ingredient->image) : null,
                         ];
-                    }),
+                    })->filter(),
+
                 ];
             });
 
@@ -188,14 +195,21 @@ class HomeController extends Controller
                     'popular' => (bool) $item->popular,
                     'new' => (bool) $item->new,
                     'ingredients' => $item->itemIngredients->map(function ($ii) use ($lang) {
+                        if (!$ii->ingredient) {
+                            return null; // skip if ingredient missing
+                        }
+
                         $decoded = json_decode($ii->ingredient->name, true);
                         $ingredientName = is_array($decoded) ? ($decoded[$lang] ?? $ii->ingredient->name) : $ii->ingredient->name;
 
                         return [
-                            'id' => $ii->ingredient->id,
-                            'name' => $ingredientName,
+                            'id'    => $ii->ingredient->id,
+                            'name'  => $ingredientName,
+                            'price' => $ii->ingredient->price,
+                            'image' => $ii->ingredient->image ? asset('storage/' . $ii->ingredient->image) : null,
                         ];
-                    }),
+                    })->filter(),
+
                 ];
             });
 
@@ -296,7 +310,7 @@ class HomeController extends Controller
             'orders' => $orders
         ));
     }
-  public function orderDetails($id)
+    public function orderDetails($id)
     {
         $orderData = Order::where('id', $id)->first();
         $orderItems = OrderItem::where('order_id', $id)->get();
@@ -305,4 +319,4 @@ class HomeController extends Controller
             'items' => $orderItems,
         ));
     }
- }
+}
