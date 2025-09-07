@@ -311,7 +311,7 @@ class HomeController extends Controller
         ));
     }
 
-       public function orderDetails($orderId)
+        public function orderDetails($orderId)
     {
         $lang = request('lang', app()->getLocale());
         $order = Order::findOrFail($orderId);
