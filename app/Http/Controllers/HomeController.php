@@ -310,13 +310,44 @@ class HomeController extends Controller
             'orders' => $orders
         ));
     }
-    public function orderDetails($id)
+
+        public function orderDetails($orderId)
     {
-        $orderData = Order::where('id', $id)->first();
-        $orderItems = OrderItem::where('order_id', $id)->get();
-        return response()->json(array(
-            'order' => $orderData,
-            'items' => $orderItems,
-        ));
+        $lang = request('lang', app()->getLocale());
+
+        $order = Order::findOrFail($orderId);
+        $orderItems = OrderItem::where('order_id', $orderId)->get();
+        $items = [];
+
+        foreach ($orderItems as $orderItem) {
+            $name = '';
+
+            if ($orderItem->item_type === 'standard') {
+                $item = StandardItem::find($orderItem->item_id);
+                if ($item && isset($item->name[$lang]) && !empty($item->name[$lang])) {
+                    $name = $item->name[$lang];
+                }
+            } elseif ($orderItem->item_type === 'customized') {
+                $item = CustomizedItem::find($orderItem->item_id);
+                if ($item && !empty($item->custom_name)) {
+                    $name = $item->custom_name;
+                }
+            }
+
+            $items[] = [
+                'id'    => $orderItem->id,
+                'type'  => $orderItem->item_type,
+                'qty'   => $orderItem->qty,
+                'price' => $orderItem->price,
+                'name'  => $name,
+            ];
+        }
+
+        return response()->json([
+            'order' => $order,
+            'items' => $items,
+        ]);
     }
+
+ 
 }
