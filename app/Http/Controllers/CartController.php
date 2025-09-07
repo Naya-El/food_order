@@ -25,6 +25,8 @@ class CartController extends Controller
             ]);
             $total = $request['total_price'];
         }else{
+            User::where('id',$userId)->update([
+                'points' => $currentPoints - $request['point_qty']]);
             $total = $request['total_price'];
         }
 
