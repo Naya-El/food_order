@@ -342,24 +342,30 @@ class HomeController extends Controller
         ]);
     }
 
-        public function search(Request $request)
+      public function search(Request $request)
     {
         $query = strtolower($request->get('query'));
-        if(!empty($query))
-        {
-            $items = StandardItem::where(function ($q) use ($query) {
-                $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$query}%"])
-                    ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))) LIKE ?", ["%{$query}%"]);
-            })
-                ->where('is_available', true)
-                ->get();
 
+        if (!empty($query)) {
+            $items = StandardItem::where('is_available', true)
+                ->where(function ($q) use ($query) {
+                    $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))) LIKE ?", ["%{$query}%"])
+                        ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$query}%"]);
+                })
+                ->selectRaw("
+                id,
+                CASE
+                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))) LIKE ? THEN JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))
+                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ? THEN JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))
+                END as name
+            ", ["%{$query}%", "%{$query}%"])
+                ->get();
 
             return response()->json($items);
         }
 
+        return response()->json([]);
     }
-
 
 
  
