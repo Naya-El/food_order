@@ -60,7 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
      // Location
     Route::post('change-location',[\App\Http\Controllers\AuthController::class, 'changeLocation']);
-    Route::get('search',[App\Http\Controllers\HomeController::class,'search']);
+    Route::post('search',[App\Http\Controllers\HomeController::class,'search']);
 
 
   Route::get('/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
