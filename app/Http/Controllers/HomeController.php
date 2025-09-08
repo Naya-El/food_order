@@ -344,28 +344,68 @@ class HomeController extends Controller
 
       public function search(Request $request)
     {
-        $query = strtolower($request->get('query'));
+        $query = $request->get('query');
 
-        if (!empty($query)) {
-            $items = StandardItem::where('is_available', true)
-                ->where(function ($q) use ($query) {
-                    $q->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))) LIKE ?", ["%{$query}%"])
-                        ->orWhereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ?", ["%{$query}%"]);
-                })
-                ->selectRaw("
-                id,
-                CASE
-                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))) LIKE ? THEN JSON_UNQUOTE(JSON_EXTRACT(name, '$.ar'))
-                    WHEN LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))) LIKE ? THEN JSON_UNQUOTE(JSON_EXTRACT(name, '$.en'))
-                END as name
-            ", ["%{$query}%", "%{$query}%"])
-                ->get();
-
-            return response()->json($items);
+        if (!$query) {
+            return response()->json([]);
         }
 
-        return response()->json([]);
+        $items = StandardItem::with('itemIngredients.ingredient')
+            ->where('is_available', true)
+            ->get()
+            ->map(function ($item) use ($query) {
+                $name = json_decode($item->name, true);
+                $nameAr = $name['ar'] ?? '';
+                $nameEn = $name['en'] ?? '';
+
+                if (mb_stripos($nameAr, $query) !== false) {
+                    $itemName = $nameAr;
+                    $lang = 'ar';
+                } elseif (mb_stripos($nameEn, $query) !== false) {
+                    $itemName = $nameEn;
+                    $lang = 'en';
+                } else {
+                    return null;
+                }
+
+                // جلب المكونات مباشرة
+                $ingredients = ($item->itemIngredients ?? collect())->map(function ($itemIngredient) use ($lang) {
+                    $ingredient = $itemIngredient->ingredient;
+                    $ingredientName = json_decode($ingredient->name, true);
+
+                    return [
+                        'id' => $ingredient->id,
+                        'name' => $ingredientName[$lang] ?? '',
+                        'unit' => $ingredient->unit,
+                        'price' => $ingredient->price,
+                        'expiration_date' => $ingredient->expiration_date,
+                        'qty' => $itemIngredient->qty,
+                        'is_optional' => $itemIngredient->is_optional,
+                        'image' => $ingredient->image,
+                    ];
+                })->values();
+
+                return [
+                    'id' => $item->id,
+                    'name' => $itemName,
+                    'category_id' => $item->category_id,
+                    'description' => $item->description,
+                    'price' => $item->price,
+                    'image' => $item->image,
+                    'is_available' => $item->is_available,
+                    'new' => $item->new,
+                    'popular' => $item->popular,
+                    'created_at' => $item->created_at,
+                    'updated_at' => $item->updated_at,
+                    'ingredients' => $ingredients,
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return response()->json($items);
     }
+
 
 
  
